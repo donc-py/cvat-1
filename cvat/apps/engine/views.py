@@ -598,10 +598,21 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             db_project = instance.project
             db_project.save()
 
-    @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs for a specific task',
+    @swagger_auto_schema(method='get', operation_summary='RRReturns a list of jobs ad for a specific task',
         responses={'200': JobSerializer(many=True)})
     @action(detail=True, methods=['GET'], serializer_class=JobSerializer)
     def jobs(self, request, pk):
+        self.get_object() # force to call check_object_permissions
+        queryset = Job.objects.filter(segment__task_id=pk)
+        serializer = JobSerializer(queryset, many=True,
+            context={"request": request})
+
+        return Response(serializer.data)
+
+    @swagger_auto_schema(method='get', operation_summary='Returns a count of labels for a specific task',
+        responses={'200': JobSerializer(many=True)})
+    @action(detail=True, methods=['GET'], serializer_class=JobSerializer)
+    def labels(self, request, pk):
         self.get_object() # force to call check_object_permissions
         queryset = Job.objects.filter(segment__task_id=pk)
         serializer = JobSerializer(queryset, many=True,
