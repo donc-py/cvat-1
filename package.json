@@ -1,6 +1,9 @@
 {
   "name": "cvat",
   "version": "1.0.0",
+  "engines": {
+    "node": "14.x"
+  },
   "description": "Eslint && remarklint dependencies",
   "main": ".eslintrc.js",
   "directories": {
