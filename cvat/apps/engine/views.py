@@ -598,7 +598,7 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
             db_project = instance.project
             db_project.save()
 
-    @swagger_auto_schema(method='get', operation_summary='RRRRReturns a list of jobs ad for a specific task',
+    @swagger_auto_schema(method='get', operation_summary='Returns a list of jobs ad for a specific task',
         responses={'200': JobSerializer(many=True)})
     @action(detail=True, methods=['GET'], serializer_class=JobSerializer)
     def jobs(self, request, pk):
@@ -621,12 +621,32 @@ class TaskViewSet(auth.TaskGetQuerySetMixin, viewsets.ModelViewSet):
         data = {"labbels":  serializer.data}
         json_file = {'count' : len(data['labbels'][0]['labels'])}
         print(json_file)
-        
+
 
         return Response(json_file)
 
-    
-        
+    @swagger_auto_schema(method='get', operation_summary='Returns a count of labels for a specific job id',
+                         responses={'200': openapi.Response(description='Return Number of Labels for specific job id')})
+    @action(detail=True, methods=['GET'], serializer_class=JobSerializer)
+    def job_labels(self, request, pk):
+        self.get_object()  # force to call check_object_permissions
+        # queryset = Job.objects.filter(segment__task_id=pk)
+        queryset = Job.objects.filter(id=pk).order_by('-id')
+        serializer = JobSerializer(queryset, many=True,
+                                    context={"request": request})
+        data = {"labbels": serializer.data}
+
+        queryset2 = Task.objects.filter(id=data['labbels'][0]['task_id']).order_by('-id')
+        serializer2 = TaskSerializer(queryset2, many=True,context={"request": request})
+        data2 = {"labbels": serializer2.data}
+        json_file = {'count': len(data2['labbels'][0]['labels'])}
+        #json_file = {'count': len(data['labbels'][0]['labels'])}
+        #print(json_file)
+
+        return Response(json_file)
+
+
+
 
     @swagger_auto_schema(method='post', operation_summary='Method permanently attaches images or video to a task',
         request_body=DataSerializer,
